@@ -39,8 +39,10 @@ app.use('*', (req, res, next) => {
 });
 
 const serverController = require('./controllers/serverController');
-
 app.use('/servers', serverController);
+
+const userController = require('./controllers/userController');
+app.use('/users', userController);
 
 // Start the server on port 3000
 // Use the port environment variable (needed for heroku) or 300 (dev)

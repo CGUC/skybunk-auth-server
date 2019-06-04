@@ -40,10 +40,9 @@ ServerSchema.statics.getAll = function () {
   return new Promise((resolve, reject) => {
     this.find().then((servers) => {
       resolve(servers);
-    })
-      .catch((err) => {
-        reject(err);
-      });
+    }).catch((err) => {
+      reject(err);
+    });
   });
 };
 
@@ -53,10 +52,10 @@ ServerSchema.statics.updateServer = function (id, updatedServerObj) {
   return new Promise((resolve, reject) => {
     this.findOneAndUpdate({ "_id": id }, { "$set": updatedServerObj}, (err, server) => {
       if(err) {
-          console.log(err);
-          reject(err);
+        console.log(err);
+        reject(err);
       } else {
-          resolve(server);
+        resolve(server);
       }
     });
   });
@@ -91,7 +90,7 @@ ServerSchema.statics.addTickets = function (id, count) {
 ServerSchema.statics.delete = function (id) {
   return new Promise((resolve, reject) => {
     this.deleteOne({ _id: id }).then(() => {
-      GoldenTicket.deleteMany({server: id}).then(_ => {
+      GoldenTicket.deleteMany({server: id}).then(() => {
         resolve('Successfully deleted server');
       }).catch((err) => {
         reject(err);
@@ -100,6 +99,18 @@ ServerSchema.statics.delete = function (id) {
       reject(err);
     });
   });
+};
+
+ServerSchema.methods.changeUserPassword = function (user, newPassword) {
+  //TODO: Pass request along to server
+  // newPassword is already hashed so server needs to know how to handle that
+  console.log(`Changing password of ${user.username} to ${newPassword} on server ${this.url}`);
+};
+
+ServerSchema.methods.registerUser = function (user, ticketNumber) {
+  //TODO: Pass request along to server
+  // user.password is already hashed so server needs to know how to handle that
+  console.log(`Registering ${user.username} on server ${this.url} using ticketNumber ${ticketNumber}`);
 };
 
 mongoose.model('Server', ServerSchema);

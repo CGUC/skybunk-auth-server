@@ -9,65 +9,59 @@ const User = mongoose.model('User');
 
 /**
  * Methods:
- *  post(/) => Registers user using goldenTicket
+ *  post(/) => Creates and registers user using goldenTicket
  *  get(/) => Gets list of all users
  *  get(/:id) => Gets user by id
- *  put(/:id) => Updates user with given id
+ *  put(/:id/register) => Registers user with given ticketNumber
  *  delete(/:id) => Deletes user with given id
  */
 
-// TODO: Add something to prove caller is legit
 router.post('/', (req, res) => {
-  User.register(req.body).then((user) => {
-    res.json(user);
+  User.create(req.body).then((user) => {
+    user.register(req.body.ticketNumber).then((user) => {
+      res.json(user);
+    }).catch((err) => {
+      res.status(500).json(err);
+    });
   }).catch((err) => {
     res.status(400).json(err);
   })
 });
 
 router.get('/', (req, res) => {
-  Server.getAll().then((servers) => {
-    res.json(servers);
-  })
-    .catch((err) => {
-      res.status(500).json(err.message);
-    });
+  User.getAll().then((users) => {
+    res.json(users);
+  }).catch((err) => {
+    res.status(500).json(err.message);
+  });
 });
 
 router.get('/:id', (req, res) => {
-  Server.get(req.params.id).then((server) => {
-    res.json(server);
+  User.get(req.params.id).then((user) => {
+    res.json(user);
   }).catch((err) => {
     res.status(400).json(err);
   });
 });
 
-router.put('/:id', (req, res) => {
-  Server.updateServer(req.params.id, req.body).then((server) => {
-    res.json(server);
+router.post('/:id/password', (req, res) => {
+  User.changePasswordById(req.params.id, req.body.password).then((password) => {
+    res.json(password);
   }).catch((err) => {
-    res.status(400).json(err);
+    res.status(500).json(err);
   });
 });
 
-router.get('/:id/tickets', (req, res) => {
-  Server.getTickets(req.params.id).then((server) => {
-    res.json(server);
-  }).catch((err) => {
-    res.status(400).json(err);
-  });
-});
-
-router.put('/:id/tickets', (req, res) => {
-  Server.addTickets(req.params.id, req.body.count).then((tickets) => {
-    res.json(tickets);
+router.put('/:id/register', (req, res) => {
+  User.registerById(req.params.id, req.body.ticketNumber).then((user) => {
+    res.json(user);
   }).catch((err) => {
     res.status(400).json(err);
   });
 });
 
 router.delete('/:id', (req, res) => {
-  Server.delete(req.params.id).then((msg) => {
+  User.delete(req.params.id).then((msg) => {
     res.json(msg);
   }).catch((err) => {
     res.status(400).json(err);
