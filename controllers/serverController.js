@@ -60,7 +60,7 @@ router.get('/:id/tickets', (req, res) => {
   });
 });
 
-router.put('/:id/tickets', (req, res) => {
+router.post('/:id/tickets', (req, res) => {
   Server.addTickets(req.params.id, req.body.count).then((tickets) => {
     res.json(tickets);
   }).catch((err) => {

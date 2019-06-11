@@ -12,13 +12,14 @@ const User = mongoose.model('User');
  *  post(/) => Creates and registers user using goldenTicket
  *  get(/) => Gets list of all users
  *  get(/:id) => Gets user by id
- *  put(/:id/register) => Registers user with given ticketNumber
+ *  put(/:id/register) => Registers user with given goldenTicket
  *  delete(/:id) => Deletes user with given id
+ *  post(/login) => login a user (return the user document)
  */
 
 router.post('/', (req, res) => {
   User.create(req.body).then((user) => {
-    user.register(req.body.ticketNumber).then((user) => {
+    user.register(req.body.goldenTicket).then((user) => {
       res.json(user);
     }).catch((err) => {
       res.status(500).json(err);
@@ -53,10 +54,18 @@ router.post('/:id/password', (req, res) => {
 });
 
 router.put('/:id/register', (req, res) => {
-  User.registerById(req.params.id, req.body.ticketNumber).then((user) => {
+  User.registerById(req.params.id, req.body.goldenTicket).then((user) => {
     res.json(user);
   }).catch((err) => {
     res.status(400).json(err);
+  });
+});
+
+router.post('/login', (req, res) => {
+  User.login(req.body.username, req.body.password).then((user) => {
+    res.json(user);
+  }).catch((err) => {
+    res.status(500).json(err);
   });
 });
 

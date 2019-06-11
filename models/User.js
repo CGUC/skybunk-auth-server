@@ -118,22 +118,46 @@ UserSchema.statics.registerById = function(id, ticketNumber) {
 
 UserSchema.methods.register = function(ticketNumber) {
   return new Promise((resolve, reject) => {
-    GoldenTicket.findOne({ticketNumber}).then((ticket) => {
-      Server.findById(ticket.server).then((server) => {
-        server.registerUser(this, ticketNumber);
-      });
-      this.servers.push(ticket.server);
-      this.save().then(() => {
-        ticket.remove().then(() => {
-          resolve(this);
-        }).catch((err) => {
-          reject(err);
+    GoldenTicket.findOne({ticketNumber}).then(async (ticket) => {
+      if (!ticket) {
+        reject('Not a valid ticket');
+      } else {
+        this.servers.push(ticket.server);
+        const user = await this.save();
+        await ticket.remove();
+        user.populate('servers', (err) => {
+          if (err)
+            reject(err);
+          else
+            resolve(user);
         });
-      }).catch((err) => {
-        reject(err);
-      });
+      }
     }).catch((err) => {
       reject(err);
+    });
+  });
+};
+
+UserSchema.statics.login = function (username, password) {
+  return new Promise((resolve, reject) => {
+    this.findOne({username}).then((user) => {
+      if (!user) {
+        reject(Error('Username does not exist'));
+      } else {
+        // Match password
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+          if (isMatch && !err) {
+            user.populate('servers', (err) => {
+              if (err)
+                reject(err);
+              else
+                resolve(user);
+            });
+          } else {
+            reject(Error('Password is incorrect'));
+          }
+        });
+      }
     });
   });
 };
