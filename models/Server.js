@@ -101,16 +101,4 @@ ServerSchema.statics.delete = function (id) {
   });
 };
 
-ServerSchema.methods.changeUserPassword = function (user, newPassword) {
-  //TODO: Pass request along to server
-  // newPassword is already hashed so server needs to know how to handle that
-  console.log(`Changing password of ${user.username} to ${newPassword} on server ${this.url}`);
-};
-
-ServerSchema.methods.registerUser = function (user, ticketNumber) {
-  //TODO: Pass request along to server
-  // user.password is already hashed so server needs to know how to handle that
-  console.log(`Registering ${user.username} on server ${this.url} using ticketNumber ${ticketNumber}`);
-};
-
 mongoose.model('Server', ServerSchema);

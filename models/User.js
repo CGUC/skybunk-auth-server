@@ -1,6 +1,8 @@
 require('../models/Server');
 require('../models/GoldenTicket');
 
+const HttpErrors = require('http-errors');
+
 const mongoose = require('mongoose');
 const Server = mongoose.model('Server');
 const GoldenTicket = mongoose.model('GoldenTicket');
@@ -32,7 +34,7 @@ UserSchema.statics.get = function (id) {
       if (user) {
         resolve(user);
       } else {
-        reject(Error('Couldn\'t find a user with that ID'));
+        reject(HttpErrors(404, 'Couldn\'t find a user with that ID'));
       }
     }).catch((err) => {
       reject(err);
@@ -50,18 +52,20 @@ UserSchema.statics.getAll = function () {
   });
 };
 
-UserSchema.statics.create = function(user, ticketNumber) {
-  return new Promise((resolve, reject) => {
-    const newUser = new this(user);
-    newUser.servers = [];
+UserSchema.statics.create = async function(user) {
+  const ticketNumber = user.goldenTicket;
+  const ticket = await GoldenTicket.findOne({ticketNumber}).exec();
+  if (ticket === null) {
+    throw HttpErrors(404, 'Not a valid ticket');
+  }
+  const newUser = new this(user);
+  newUser.servers = [ticket.server];
 
-    // Encrypt the password and save
-    newUser.changePassword(newUser.password).then(() => {
-      resolve(newUser);
-    }).catch((err) => {
-      reject(err);
-    });
-  });
+  // Encrypt the password and save
+  await newUser.changePassword(newUser.password);
+  await newUser.populate('servers').execPopulate();
+  await ticket.remove();
+  return newUser;
 };
 
 UserSchema.statics.changePasswordById = function(id, newPassword) {
@@ -86,11 +90,6 @@ UserSchema.methods.changePassword = function (newPassword) {
           reject(err);
         } else {
           this.password = hash;
-          this.servers.forEach((serverId) => {
-            Server.findById(serverId).then((server) => {
-              server.changeUserPassword(this, newPassword);
-            });
-          });
           this.save().then(() => {
             resolve(hash);
           }).catch((err) => {

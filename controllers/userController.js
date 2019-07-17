@@ -1,5 +1,7 @@
 const express = require('express');
 
+const HttpErrors = require('http-errors');
+
 const router = express.Router();
 const mongoose = require('mongoose');
 
@@ -19,14 +21,14 @@ const User = mongoose.model('User');
 
 router.post('/', (req, res) => {
   User.create(req.body).then((user) => {
-    user.register(req.body.goldenTicket).then((user) => {
-      res.json(user);
-    }).catch((err) => {
-      res.status(500).json(err);
-    });
+    res.json(user);
   }).catch((err) => {
-    res.status(400).json(err);
-  })
+    if (err instanceof HttpErrors.HttpError) {
+      res.status(err.status).json(err.message);
+    } else {
+      res.status(500).json(err);
+    }
+  });
 });
 
 router.get('/', (req, res) => {
