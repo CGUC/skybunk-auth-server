@@ -3,6 +3,8 @@ require('../models/GoldenTicket');
 const mongoose = require('mongoose');
 const GoldenTicket = mongoose.model('GoldenTicket');
 
+const bcrypt = require('bcryptjs');
+const uuidv4 = require('uuid/v4');
 const _ = require('lodash');
 
 const { Schema } = mongoose;
@@ -17,8 +19,25 @@ const ServerSchema = new Schema({
   name: {
     type: String,
     required: true,
+  },
+  accessKey: {
+    type: String,
+    required: true
   }
 });
+
+ServerSchema.statics.create = async function(server) {
+  const newServer = new this(server);
+
+  // Encrypt the password and save
+  const accessKey = uuidv4();
+  const salt = bcrypt.genSaltSync(10);
+  newServer.accessKey = bcrypt.hashSync(accessKey, salt);
+  await newServer.save();
+
+  newServer.accessKey = accessKey;
+  return newServer;
+};
 
 ServerSchema.statics.get = function (id) {
   id = ObjectId(id);
@@ -100,5 +119,16 @@ ServerSchema.statics.delete = function (id) {
     });
   });
 };
+
+ServerSchema.statics.verifyAccessKey = async function (id, accessKey) {
+  try {
+    const server = await this.findById(id, 'accessKey');
+    if (server) {
+      return bcrypt.compareSync(accessKey, server.accessKey);
+    }
+  } catch (err) {
+    }
+  return false;
+}
 
 mongoose.model('Server', ServerSchema);

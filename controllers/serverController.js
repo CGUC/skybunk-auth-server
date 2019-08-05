@@ -7,6 +7,20 @@ require('../models/Server');
 
 const Server = mongoose.model('Server');
 
+const checkAccessKey = async (req, res, next) => {
+  const accessKey = req.headers.accesskey;
+
+  if (typeof accessKey !== 'undefined') {
+    if (await Server.verifyAccessKey(req.params.id, accessKey)) {
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  } else {
+    res.sendStatus(403);
+  }
+};
+
 /**
  * Methods:
  *  post(/) => Registers new server
@@ -44,7 +58,7 @@ router.get('/:id', (req, res) => {
   });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', checkAccessKey, (req, res) => {
   Server.updateServer(req.params.id, req.body).then((server) => {
     res.json(server);
   }).catch((err) => {
@@ -52,7 +66,7 @@ router.put('/:id', (req, res) => {
   });
 });
 
-router.get('/:id/tickets', (req, res) => {
+router.get('/:id/tickets', checkAccessKey, (req, res) => {
   Server.getTickets(req.params.id).then((server) => {
     res.json(server);
   }).catch((err) => {
@@ -60,7 +74,7 @@ router.get('/:id/tickets', (req, res) => {
   });
 });
 
-router.post('/:id/tickets', (req, res) => {
+router.post('/:id/tickets', checkAccessKey, (req, res) => {
   Server.addTickets(req.params.id, req.body.count).then((tickets) => {
     res.json(tickets);
   }).catch((err) => {
@@ -68,7 +82,7 @@ router.post('/:id/tickets', (req, res) => {
   });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', checkAccessKey, (req, res) => {
   Server.delete(req.params.id).then((msg) => {
     res.json(msg);
   }).catch((err) => {
