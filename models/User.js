@@ -2,6 +2,7 @@ require('../models/Server');
 require('../models/GoldenTicket');
 
 const HttpErrors = require('http-errors');
+const fetch = require('node-fetch');
 
 const mongoose = require('mongoose');
 const Server = mongoose.model('Server');
@@ -139,22 +140,36 @@ UserSchema.methods.register = function(ticketNumber) {
 
 UserSchema.statics.login = function (username, password) {
   return new Promise((resolve, reject) => {
-    this.findOne({username}).then((user) => {
+    this.findOne({username}).populate('servers').then((user) => {
       if (!user) {
-        reject(Error('Username does not exist'));
+        reject({code: 404, message: 'Username does not exist'});
       } else {
-        // Match password
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-          if (isMatch && !err) {
-            user.populate('servers', (err) => {
-              if (err)
-                reject(err);
-              else
-                resolve(user);
+        Promise.all(user.servers.map(server => {
+          return new Promise((resolve, reject) => {
+            fetch(`${server.url}/users/login`, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({username, password}),
+            }).then(res => res.json()).then(jsonRes => {
+              if (jsonRes.err) {
+                reject({code: 404, message: jsonRes.err.message});
+              }
+              resolve({
+                name: server.name,
+                url: server.url,
+                token: jsonRes.token,
+              });
+            }).catch(err => {
+              reject({code: 500, message: err.message});
             });
-          } else {
-            reject(Error('Password is incorrect'));
-          }
+          });
+        })).then(servers => {
+          resolve(servers);
+        }).catch(err => {
+          reject(err);
         });
       }
     });
