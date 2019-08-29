@@ -67,7 +67,7 @@ router.post('/login', (req, res) => {
   User.login(req.body.username, req.body.password).then((user) => {
     res.json(user);
   }).catch((err) => {
-    res.status(500).json(err);
+    res.status(err.code).json({err});
   });
 });
 
