@@ -28,11 +28,11 @@ const checkAccessKey = async (req, res, next) => {
  *  get(/:id) => Gets server by id
  *  put(/:id) => Updates server with given id
  *  get(/:id/tickets) => Gets all tickets associated with server
- *  put(/:id/tickets) => Create tickets associated with server
+ *  post(/:id/tickets) => Create tickets associated with server
  *  delete(/:id) => Deletes server with given id
  */
 
-// TODO: Add something to prove caller is legit
+/* TODO: re-add delete endpoint once security becomes a thing
 router.post('/', (req, res) => {
   Server.create(req.body).then((server) => {
     res.json(server);
@@ -40,6 +40,7 @@ router.post('/', (req, res) => {
     res.status(400).json(err);
   })
 });
+*/
 
 router.get('/', (req, res) => {
   Server.getAll().then((servers) => {
@@ -58,6 +59,7 @@ router.get('/:id', (req, res) => {
   });
 });
 
+/* TODO: re-add delete endpoint once security becomes a thing
 router.put('/:id', checkAccessKey, (req, res) => {
   Server.updateServer(req.params.id, req.body).then((server) => {
     res.json(server);
@@ -65,6 +67,7 @@ router.put('/:id', checkAccessKey, (req, res) => {
     res.status(400).json(err);
   });
 });
+*/
 
 router.get('/:id/tickets', checkAccessKey, (req, res) => {
   Server.getTickets(req.params.id).then((server) => {
@@ -74,6 +77,7 @@ router.get('/:id/tickets', checkAccessKey, (req, res) => {
   });
 });
 
+/* TODO: re-add delete endpoint once security becomes a thing
 router.post('/:id/tickets', checkAccessKey, (req, res) => {
   Server.addTickets(req.params.id, req.body.count).then((tickets) => {
     res.json(tickets);
@@ -81,7 +85,9 @@ router.post('/:id/tickets', checkAccessKey, (req, res) => {
     res.status(400).json(err);
   });
 });
+*/
 
+/* TODO: re-add delete endpoint once security becomes a thing
 router.delete('/:id', checkAccessKey, (req, res) => {
   Server.delete(req.params.id).then((msg) => {
     res.json(msg);
@@ -89,5 +95,5 @@ router.delete('/:id', checkAccessKey, (req, res) => {
     res.status(400).json(err);
   });
 });
-
+*/
 module.exports = router;
