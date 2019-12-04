@@ -71,6 +71,7 @@ router.post('/login', (req, res) => {
   });
 });
 
+/* TODO: re-add delete endpoint once security becomes a thing
 router.delete('/:id', (req, res) => {
   User.delete(req.params.id).then((msg) => {
     res.json(msg);
@@ -78,5 +79,5 @@ router.delete('/:id', (req, res) => {
     res.status(400).json(err);
   });
 });
-
+*/
 module.exports = router;
