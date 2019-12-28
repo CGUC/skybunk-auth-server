@@ -13,7 +13,7 @@ const User = mongoose.model('User');
  * Methods:
  *  post(/) => Creates and registers user using goldenTicket
  *  get(/) => Gets list of all users
- *  get(/:id) => Gets user by id
+ *  get(/user/:id) => Gets user by id
  *  put(/:id/register) => Registers user with given goldenTicket
  *  delete(/:id) => Deletes user with given id
  *  post(/login) => login a user (return the user document)
@@ -39,10 +39,34 @@ router.get('/', (req, res) => {
   });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/user/:id', (req, res) => {
   User.get(req.params.id).then((user) => {
     res.json(user);
   }).catch((err) => {
+    res.status(400).json(err);
+  });
+});
+
+router.post('/reset', (req, res) => {
+  console.log("sending reset email")
+  User.sendResetPasswordEmail(req.body).then((response) => {
+    response.json().then((JSONresponse) => {
+      res.status(response.status).json(JSONresponse);
+    });
+    
+  }).catch((err) => {
+    console.error(err);
+    res.status(400).json(err);
+  });
+});
+
+router.post('/reset/:id/:token', (req, res) => {
+  User.resetPassword(req).then((response) => {
+    response.json().then((JSONresponse) => {
+      res.status(response.status).json(JSONresponse);
+    });
+  }).catch((err) => {
+    console.error(err);
     res.status(400).json(err);
   });
 });

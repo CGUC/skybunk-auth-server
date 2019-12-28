@@ -19,6 +19,7 @@ const ServerSchema = new Schema({
   name: {
     type: String,
     required: true,
+    unique: true
   },
   accessKey: {
     type: String,
