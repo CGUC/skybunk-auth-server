@@ -43,6 +43,45 @@ UserSchema.statics.get = function (id) {
   });
 };
 
+UserSchema.statics.sendResetPasswordEmail = function (body) {
+  return new Promise((resolve, reject) => {
+    console.log(body)
+    fetch(`${body.url}/users/reset`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    }).then(jsonRes => {
+      resolve(jsonRes);
+    }).catch(err => {
+      reject({code: 500, message: err.message});
+    });
+  });
+};
+
+UserSchema.statics.resetPassword = function (req) {
+  return new Promise((resolve, reject) => {
+    this.findById(req.params.id).populate("servers").then((user) => {
+      fetch(`${user.servers[0].url}/users/reset/${req.params.id}/${req.params.token}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req.body),
+      }).then(res => {
+        resolve(res);
+      }).catch(err => {
+        reject({code: 500, message: err.message});
+      });
+    }).catch((err) => {
+      reject(err);
+    });;
+  });
+};
+
 UserSchema.statics.getAll = function () {
   return new Promise((resolve, reject) => {
     this.find().populate('servers').select('-password').then((servers) => {
