@@ -60,7 +60,7 @@ router.post('/reset', (req, res) => {
   });
 });
 
-router.post('/reset/:id/:token', (req, res) => {
+router.post('/reset/:username/:token', (req, res) => {
   User.resetPassword(req).then((response) => {
     response.json().then((JSONresponse) => {
       res.status(response.status).json(JSONresponse);
