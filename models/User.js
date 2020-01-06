@@ -63,7 +63,7 @@ UserSchema.statics.sendResetPasswordEmail = function (body) {
 
 UserSchema.statics.resetPassword = function (req) {
   return new Promise((resolve, reject) => {
-    this.findById(req.params.id).populate("servers").then((user) => {
+    this.findOne({username: req.params.username}).populate("servers").then((user) => {
       fetch(`${user.servers[0].url}/users/reset/${req.params.id}/${req.params.token}`, {
         method: 'POST',
         headers: {
